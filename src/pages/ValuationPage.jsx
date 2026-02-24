@@ -628,7 +628,7 @@ const ValuationPage = () => {
               <Row label="WACC" value={`${dr}%`}/>
               <Row label="Terminal Growth" value={`${tg}%`} last/>
             </>
-          ):<div style={{color:C.muted,fontSize:'13px'}}>ใส่ EPS > 0 เพื่อคำนวณ</div>}
+          ):<div style={{color:C.muted,fontSize:'13px'}}>ใส่ EPS มากกว่า 0 เพื่อคำนวณ</div>}
         </Card>
 
         <Card style={{animation:'fadeUp 0.4s ease 0.2s both'}}>
@@ -640,11 +640,11 @@ const ValuationPage = () => {
             <>
               <Row label="Graham Number" value={`${curr}${grahVal.toFixed(2)}`} color={C.purple}/>
               {currentPrice>0&&<Row label="ราคาปัจจุบัน" value={`${curr}${currentPrice.toFixed(2)}`} color={currentPrice<=grahVal?C.up:C.down}/>}
-              {currentPrice>0&&<Row label="Margin of Safety" value={`${mosGrah>=0?'+':''}${mosGrah.toFixed(1)}%`} color={mosGrah>=0?C.up:C.down} note={mosGrah>=33?'✅ Graham แนะนำ ≥33%':mosGrah>=0?'⚠️ น้อยกว่าที่แนะนำ':'❌ แพงกว่า Graham'}/>}
+              {currentPrice>0&&<Row label="Margin of Safety" value={`${mosGrah>=0?'+':''}${mosGrah.toFixed(1)}%`} color={mosGrah>=0?C.up:C.down} note={mosGrah>=33?'✅ Graham แนะนำ มากเท่ากับ 33%':mosGrah>=0?'⚠️ น้อยกว่าที่แนะนำ':'❌ แพงกว่า Graham'}/>}
               <Row label="EPS" value={`${curr}${eps}`}/>
               <Row label="BVPS" value={`${curr}${bvps}`} last/>
             </>
-          ):<div style={{color:C.muted,fontSize:'13px'}}>ใส่ EPS และ BVPS > 0</div>}
+          ):<div style={{color:C.muted,fontSize:'13px'}}>ใส่ EPS และ BVPSมาก0</div>}
         </Card>
 
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
@@ -659,7 +659,7 @@ const ValuationPage = () => {
                 <Row label="P/E ตอนนี้" value={pe_current?`${pe_current.toFixed(1)}x`:'—'}/>
                 <Row label="Target P/E" value={`${tpe}x`} last/>
               </>
-            ):<div style={{color:C.muted,fontSize:'12px'}}>ใส่ EPS > 0</div>}
+            ):<div style={{color:C.muted,fontSize:'12px'}}>ใส่ EPSมาก0</div>}
           </Card>
 
           <Card style={{animation:'fadeUp 0.4s ease 0.3s both',marginBottom:0}}>
