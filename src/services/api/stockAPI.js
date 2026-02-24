@@ -4,8 +4,8 @@ import axios from 'axios';
 // ════════════════════════════════════════════════════════════
 // 🔑 API KEYS — ใส่ของคุณตรงนี้
 // ════════════════════════════════════════════════════════════
-const FINNHUB_KEY = 'd6atpe1r01qnr27iseugd6atpe1r01qnr27isev0';  // ⬅️ ใส่ key ของคุณ
-const FMP_KEY = '30gy5YTO7qW3ovbKPJu2SjrR0wffJb3C';
+const FINNHUB_KEY = import.meta.env.VITE_FINNHUB_KEY;  // ⬅️ ใส่ key ของคุณ
+const FMP_KEY = import.meta.env.VITE_FMP_KEY;
 
 // ⚠️ FMP เปลี่ยนเป็น /stable แล้ว (ไม่ใช่ /api/v3)
 const FINNHUB_URL = 'https://finnhub.io/api/v1';
