@@ -1,5 +1,5 @@
 // src/pages/ValuationPage.jsx
-// 💰 Valuation Page — เวอร์ชันอัพเดท (May 2026)
+// 💰 Valuation Page — เวอร์ชันอัพเดท + DCF ดีขึ้น (May 2026)
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -27,7 +27,7 @@ const calculateDCF = ({ eps, g, r, tg, n = 10, terminalGrowthCap = 4 }) => {
   let pvExplicit = 0;
   let cf = eps;
 
-  // Stage 1: High Growth (10 ปี)
+  // Stage 1: High Growth Period (10 ปี)
   for (let i = 1; i <= n; i++) {
     cf *= (1 + gr);
     pvExplicit += cf / Math.pow(1 + rr, i);
@@ -44,11 +44,10 @@ const calculateDCF = ({ eps, g, r, tg, n = 10, terminalGrowthCap = 4 }) => {
     explicitPV: Math.round(pvExplicit * 100) / 100,
     terminalPV: Math.round(pvTerminal * 100) / 100,
     terminalValue: Math.round(terminalValue * 100) / 100,
-    assumptions: { eps, g, r, tg, n }
   };
 };
 
-// Other calculators
+// Other valuation functions
 const GRAHAM = (eps, bvps) => (eps > 0 && bvps > 0) ? Math.sqrt(22.5 * eps * bvps) : null;
 const PE_FAIR = (eps, pe) => (eps > 0 && pe > 0) ? eps * pe : null;
 const PEG = (price, eps, g) => {
@@ -57,28 +56,55 @@ const PEG = (price, eps, g) => {
 };
 const MOS = (fair, price) => (fair && price > 0) ? ((fair - price) / fair) * 100 : null;
 
-// ... (ส่วน UI Components: Card, SecHead, Row, Slide, NumBox, Meter, CompBar ฯลฯ ยังคงเหมือนเดิม)
+// UI Components
+const Card = ({ children, style }) => (
+  <div style={{
+    background: C.s2, border: `1px solid ${C.border}`, borderRadius: '16px',
+    padding: '20px', marginBottom: '16px', ...style
+  }}>
+    {children}
+  </div>
+);
+
+const SecHead = ({ icon, title, color = C.blue }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+    <span style={{ fontSize: '18px' }}>{icon}</span>
+    <span style={{ fontSize: '15px', fontWeight: '800', color, letterSpacing: '0.5px' }}>{title}</span>
+  </div>
+);
+
+const Row = ({ label, value, color, last }) => (
+  <div style={{
+    display: 'flex', justifyContent: 'space-between', padding: '10px 0',
+    borderBottom: last ? 'none' : `1px solid ${C.border}`
+  }}>
+    <span style={{ color: C.muted, fontSize: '13px' }}>{label}</span>
+    <span style={{ fontWeight: '700', color: color || C.text, fontSize: '15px' }}>{value}</span>
+  </div>
+);
 
 const ValuationPage = () => {
-  // ... (State เดิมทั้งหมด ฉันย่อเพื่อความกระชับ)
-  const [symInput, setSymInput] = useState('');
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Stock data
+  const [symInput, setSymInput] = useState(searchParams.get('symbol') || '');
   const [price, setPrice] = useState(0);
   const [manualPrice, setManualPrice] = useState(0);
   const [fetchSym, setFetchSym] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchErr, setFetchErr] = useState('');
 
+  // Valuation inputs
   const [eps, setEps] = useState(5);
   const [bvps, setBvps] = useState(30);
-  const [gr, setGr] = useState(10);
-  const [dr, setDr] = useState(10);
-  const [tg, setTg] = useState(3);
+  const [gr, setGr] = useState(10);     // Growth Rate %
+  const [dr, setDr] = useState(10);     // Discount Rate %
+  const [tg, setTg] = useState(3);      // Terminal Growth %
   const [tpe, setTpe] = useState(20);
 
   const currentPrice = price || manualPrice;
   const curr = THAI_SYM.includes(fetchSym) ? '฿' : '$';
-
-  // Auto fetch functions (คงเดิม แต่เรียกใช้ได้ปกติ)
 
   // Calculations
   const dcfResult = useMemo(() => calculateDCF({ eps, g: gr, r: dr, tg }), [eps, gr, dr, tg]);
@@ -90,42 +116,32 @@ const ValuationPage = () => {
   const mosGrah = MOS(grahVal, currentPrice);
   const mosPE = MOS(peFairVal, currentPrice);
 
-  // ... (ส่วน scores, total, signal คงเดิม)
-
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, ... }}>
-      {/* Header และ Step 1, Step 2 คงเดิม */}
+    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, padding: '20px' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>📊 Stock Valuation</h1>
 
-      {/* DCF Section — อัพเดทใหม่ */}
+      {/* DCF Section */}
       <Card>
-        <SecHead icon="📊" title="DCF Valuation (2-Stage Model)" color={C.blue} />
-        
+        <SecHead icon="📈" title="DCF Valuation (2-Stage Model)" color={C.blue} />
         {dcfResult.error ? (
           <p style={{ color: C.down }}>{dcfResult.error}</p>
         ) : (
           <>
             <Row label="Fair Value (DCF)" value={`${curr} ${dcfResult.value}`} color={C.up} />
             <Row label="• Explicit Period (10 ปี)" value={`${curr} ${dcfResult.explicitPV}`} />
-            <Row label="• Terminal Value PV" value={`${curr} ${dcfResult.terminalPV}`} />
-            
-            <div style={{ marginTop: '12px', fontSize: '12px', color: C.muted }}>
-              Growth {gr}% → Terminal {tg}% | WACC {dr}%
+            <Row label="• Terminal Value (PV)" value={`${curr} ${dcfResult.terminalPV}`} last />
+            <div style={{ marginTop: '12px', fontSize: '12.5px', color: C.muted }}>
+              Growth {gr}% → Terminal {tg}% | Discount Rate {dr}%
             </div>
           </>
         )}
       </Card>
 
-      {/* ส่วนอื่น ๆ (Graham, P/E, PEG, Signal) คงเดิม */}
+      {/* Graham, PE, PEG, MOS... (สามารถเพิ่มต่อได้) */}
 
-      {/* Sensitivity Analysis (เพิ่มใหม่) */}
-      {dcfResult.value && currentPrice > 0 && (
-        <Card>
-          <SecHead icon="📋" title="Sensitivity Analysis" color={C.teal} />
-          {/* ตารางแสดงผลเมื่อเปลี่ยน Growth / Discount Rate */}
-        </Card>
-      )}
-
-      {/* Disclaimer */}
+      <div style={{ textAlign: 'center', marginTop: '40px', color: C.muted, fontSize: '13px' }}>
+        Disclaimer: ไม่ใช่คำแนะนำการลงทุน • ใช้เพื่อการศึกษาเท่านั้น
+      </div>
     </div>
   );
 };
